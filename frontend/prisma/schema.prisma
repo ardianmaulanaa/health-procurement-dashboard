@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum RoleCode {
+  SUPER_ADMIN
+  LPSE_ADMIN
+  OPERATOR
+  LEADER
+  PA
+  KPA
+  PPK
+  PROCUREMENT_OFFICER
+  SELECTION_WORKGROUP
+  UKPBJ
+  AUDITOR
+  VIEWER
+}
+
+enum AuditAction {
+  LOGIN
+  LOGOUT
+  CREATE
+  UPDATE
+  DELETE
+  APPROVE
+  REJECT
+  EXPORT
+}
+
+model User {
+  id           String     @id @default(uuid()) @db.Char(36)
+  name         String     @db.VarChar(160)
+  email        String     @unique @db.VarChar(180)
+  passwordHash String     @map("password_hash") @db.VarChar(255)
+  status       UserStatus @default(ACTIVE)
+  lastLoginAt  DateTime?  @map("last_login_at")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  roles     UserRole[]
+  auditLogs AuditLog[]
+
+  @@index([name])
+  @@index([status])
+  @@map("users")
+}
+
+model Role {
+  id          String   @id @default(uuid()) @db.Char(36)
+  code        RoleCode @unique
+  name        String   @db.VarChar(120)
+  description String?  @db.VarChar(255)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  users UserRole[]
+
+  @@map("roles")
+}
+
+model UserRole {
+  id        String   @id @default(uuid()) @db.Char(36)
+  userId    String   @map("user_id") @db.Char(36)
+  roleId    String   @map("role_id") @db.Char(36)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+  @@index([roleId])
+  @@map("user_roles")
+}
+
+model AuditLog {
+  id        String      @id @default(uuid()) @db.Char(36)
+  userId    String?     @map("user_id") @db.Char(36)
+  action    AuditAction
+  entity    String      @db.VarChar(120)
+  entityId  String?     @map("entity_id") @db.VarChar(120)
+  before    Json?
+  after     Json?
+  ipAddress String?     @map("ip_address") @db.VarChar(80)
+  userAgent String?     @map("user_agent") @db.VarChar(255)
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([action])
+  @@index([entity])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

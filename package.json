@@ -1,4 +1,10 @@
 {
+  "scripts": {
+    "dev": "npm --prefix frontend run dev --",
+    "build": "npm --prefix frontend run build --",
+    "start": "npm --prefix frontend run start --",
+    "lint": "npm --prefix frontend run lint --"
+  },
   "dependencies": {
     "lucide-react": "^1.16.0"
   }
