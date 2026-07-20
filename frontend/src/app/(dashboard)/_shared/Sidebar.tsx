@@ -2,23 +2,31 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import {
   AlertTriangle,
   Archive,
   BarChart3,
-  Boxes,
   Building2,
+  CalendarDays,
   ClipboardList,
   Database,
   FileBarChart2,
   FileCheck2,
+  FileText,
+  FolderOpen,
   Handshake,
   LayoutDashboard,
+  Menu,
+  MessageSquareText,
   PackageSearch,
+  Ruler,
   Settings,
   ShieldCheck,
+  ShoppingCart,
   Truck,
   UsersRound,
+  WalletCards,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -33,6 +41,7 @@ type NavigationItem = {
   href: string;
   label: string;
   icon: LucideIcon;
+  badge?: string;
 };
 
 type NavigationSection = {
@@ -42,39 +51,60 @@ type NavigationSection = {
 
 const sections: NavigationSection[] = [
   {
-    title: "Monitoring",
+    title: "Utama",
     items: [
       { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-      { href: "/data-barang", label: "Data Barang", icon: Boxes },
-      { href: "/paket", label: "Paket", icon: ClipboardList },
-      { href: "/pengadaan/perencanaan", label: "Pengadaan", icon: PackageSearch },
+      { href: "/rup", label: "SIRUP / RUP", icon: ClipboardList, badge: "3" },
+      { href: "/pengadaan/perencanaan", label: "Perencanaan", icon: Ruler },
     ],
   },
   {
-    title: "Pelaksanaan",
+    title: "Pengadaan",
     items: [
-      { href: "/kontrak", label: "Kontrak", icon: FileCheck2 },
+      { href: "/katalog", label: "Katalog V6/V5", icon: ShoppingCart },
+      {
+        href: "/pengadaan/pemilihan",
+        label: "Tender & Non Tender",
+        icon: PackageSearch,
+      },
+      { href: "/paket", label: "Paket Pengadaan", icon: ClipboardList },
+      { href: "/data-barang", label: "Data Barang", icon: Database },
+      { href: "/kontrak", label: "Kontrak & SP", icon: FileCheck2, badge: "2" },
       { href: "/progres", label: "Progres", icon: BarChart3 },
-      { href: "/realisasi", label: "Realisasi", icon: Building2 },
       { href: "/serah-terima", label: "Serah Terima", icon: Handshake },
+      { href: "/realisasi", label: "Realisasi Belanja", icon: WalletCards },
     ],
   },
   {
-    title: "Referensi",
+    title: "Monitoring",
     items: [
-      { href: "/penyedia", label: "Penyedia", icon: Truck },
-      { href: "/warning", label: "Warning", icon: AlertTriangle },
+      {
+        href: "/warning",
+        label: "Risiko & Mitigasi",
+        icon: AlertTriangle,
+        badge: "5",
+      },
+      { href: "/audit", label: "Audit Readiness", icon: ShieldCheck },
+      { href: "/timeline", label: "Timeline", icon: CalendarDays },
+    ],
+  },
+  {
+    title: "Pendukung",
+    items: [
+      { href: "/penyedia", label: "Vendor & Pasar", icon: Truck },
+      {
+        href: "/klinik",
+        label: "Klinik UKPBJ",
+        icon: MessageSquareText,
+        badge: "1",
+      },
+      { href: "/dokumen", label: "Dokumen & Template", icon: FolderOpen },
       { href: "/laporan", label: "Laporan", icon: FileBarChart2 },
-      { href: "/master/instansi", label: "Master Data", icon: Database },
-    ],
-  },
-  {
-    title: "Administrasi",
-    items: [
+      { href: "/master/instansi", label: "Master Data", icon: Building2 },
+      { href: "/pengaturan", label: "Pengaturan", icon: Settings },
       { href: "/admin/users", label: "Users", icon: UsersRound },
-      { href: "/admin/roles", label: "Role", icon: ShieldCheck },
       { href: "/admin/audit-log", label: "Audit Log", icon: Archive },
-      { href: "/profile", label: "Profile", icon: Settings },
+      { href: "/profile", label: "Profile", icon: FileText },
     ],
   },
 ];
@@ -84,8 +114,11 @@ function isActivePath(pathname: string, href: string) {
     return pathname === "/dashboard";
   }
 
-  const baseHref = href.split("/").slice(0, 2).join("/");
-  return pathname === href || pathname.startsWith(`${baseHref}/`);
+  if (href === "/warning") {
+    return pathname === "/warning" || pathname.startsWith("/warning/");
+  }
+
+  return pathname === href || pathname.startsWith(`${href}/`);
 }
 
 export default function Sidebar({
@@ -95,6 +128,9 @@ export default function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname();
   const isDesktop = mode === "desktop";
+  const [collapsed, setCollapsed] = useState(false);
+
+  const toggleCollapsed = () => setCollapsed((current) => !current);
 
   return (
     <>
@@ -109,10 +145,10 @@ export default function Sidebar({
       ) : null}
 
       <aside
-        className={`inset-y-0 left-0 z-50 w-[300px] flex-col border-r border-slate-200 bg-white transition-transform duration-300 ${
+        className={`inset-y-0 left-0 z-50 flex-col border-r border-slate-200 bg-white text-slate-700 transition-all duration-300 ${
           isDesktop
-            ? "sticky top-0 hidden h-dvh lg:flex"
-            : `fixed flex lg:hidden ${open ? "translate-x-0" : "-translate-x-full"}`
+            ? `sticky top-0 hidden h-dvh lg:flex ${collapsed ? "w-[76px]" : "w-[260px]"}`
+            : `fixed flex w-[300px] lg:hidden ${open ? "translate-x-0" : "-translate-x-full"}`
         }`}
       >
         <div className="grid h-1.5 grid-cols-3">
@@ -121,12 +157,14 @@ export default function Sidebar({
           <div className="bg-[#159cc3]" />
         </div>
 
-        <div className="flex min-h-[86px] items-center justify-between border-b border-slate-100 px-5">
-          <div>
+        <div className="flex min-h-[96px] items-center justify-between border-b border-slate-100 px-5">
+          <div
+            className={`min-w-0 ${collapsed && isDesktop ? "hidden" : "block"}`}
+          >
             <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#08783f]">
               Dinkes Jabar
             </p>
-            <h2 className="mt-1 text-lg font-black tracking-[-0.03em] text-slate-950">
+            <h2 className="mt-2 text-xl font-black tracking-[-0.03em] text-slate-950">
               Monitoring PBJ
             </h2>
           </div>
@@ -134,7 +172,7 @@ export default function Sidebar({
           <button
             type="button"
             onClick={onClose}
-            className={`h-11 w-11 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100 ${
+            className={`h-10 w-10 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-[#08783f] ${
               isDesktop ? "hidden" : "flex"
             }`}
             aria-label="Tutup menu"
@@ -142,15 +180,29 @@ export default function Sidebar({
           >
             <X className="h-5 w-5" strokeWidth={2.4} />
           </button>
+
+          {isDesktop ? (
+            <button
+              type="button"
+              onClick={toggleCollapsed}
+              className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-500 hover:bg-[#f4f7f5] hover:text-[#08783f]"
+              aria-label={collapsed ? "Buka sidebar" : "Tutup sidebar"}
+              title={collapsed ? "Buka sidebar" : "Tutup sidebar"}
+            >
+              <Menu className="h-5 w-5" strokeWidth={2.6} />
+            </button>
+          ) : null}
         </div>
 
-        <nav className="min-h-0 flex-1 overflow-y-auto px-4 py-5">
-          <div className="space-y-6">
+        <nav className="min-h-0 flex-1 overflow-y-auto px-3 py-4">
+          <div className="space-y-4">
             {sections.map((section) => (
               <section key={section.title}>
-                <p className="px-3 text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
-                  {section.title}
-                </p>
+                {collapsed && isDesktop ? null : (
+                  <p className="px-3 pb-1 text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
+                    {section.title}
+                  </p>
+                )}
                 <div className="mt-2 space-y-1">
                   {section.items.map((item) => {
                     const Icon = item.icon;
@@ -161,14 +213,35 @@ export default function Sidebar({
                         key={item.href}
                         href={item.href}
                         onClick={onClose}
-                        className={`flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-bold transition ${
+                        title={collapsed && isDesktop ? item.label : undefined}
+                        className={`flex min-h-10 items-center gap-3 rounded-lg border-l-[3px] px-3 text-sm font-bold transition ${
                           active
-                            ? "bg-[#08783f] text-white shadow-[0_10px_22px_rgba(8,120,63,0.20)]"
-                            : "text-slate-600 hover:bg-[#f4f7f5] hover:text-[#08783f]"
-                        }`}
+                            ? "border-[#08783f] bg-[#08783f] text-white shadow-[0_10px_22px_rgba(8,120,63,0.18)]"
+                            : "border-transparent text-slate-600 hover:border-[#08783f]/25 hover:bg-[#f4f7f5] hover:text-[#08783f]"
+                        } ${collapsed && isDesktop ? "justify-center px-0" : ""}`}
                       >
-                        <Icon className="h-5 w-5 shrink-0" strokeWidth={2.2} />
-                        <span className="truncate">{item.label}</span>
+                        <Icon
+                          className="h-5 w-5 shrink-0"
+                          strokeWidth={2.2}
+                        />
+                        <span
+                          className={`truncate ${
+                            collapsed && isDesktop ? "hidden" : "block"
+                          }`}
+                        >
+                          {item.label}
+                        </span>
+                        {item.badge && !(collapsed && isDesktop) ? (
+                          <span
+                            className={`ml-auto rounded-full px-1.5 py-0.5 text-[10px] font-black ${
+                              active
+                                ? "bg-white text-[#08783f]"
+                                : "bg-red-500 text-white"
+                            }`}
+                          >
+                            {item.badge}
+                          </span>
+                        ) : null}
                       </Link>
                     );
                   })}

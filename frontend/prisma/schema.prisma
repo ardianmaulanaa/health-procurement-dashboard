@@ -37,6 +37,51 @@ enum AuditAction {
   EXPORT
 }
 
+enum BarangPrioritas {
+  RENDAH
+  NORMAL
+  TINGGI
+  MENDESAK
+}
+
+enum BarangStatus {
+  AKTIF
+  NONAKTIF
+}
+
+enum PaketJenisPengadaan {
+  BARANG
+  JASA
+}
+
+enum PaketMetodePengadaan {
+  TENDER
+  NON_TENDER
+  E_PURCHASING
+  PENGADAAN_LANGSUNG
+  SWAKELOLA
+}
+
+enum PaketStatus {
+  PERENCANAAN
+  SIAP_DIPROSES
+  PEMILIHAN
+  PEMENANG_DITETAPKAN
+  KONTRAK
+  SELESAI
+  GAGAL
+  BATAL
+  TERLAMBAT
+}
+
+enum RupStatus {
+  BELUM_INPUT
+  PROSES_VERIFIKASI
+  SUDAH_TAYANG
+  REVISI_PAGU
+  DITARIK
+}
+
 model User {
   id           String     @id @default(uuid()) @db.Char(36)
   name         String     @db.VarChar(160)
@@ -101,4 +146,86 @@ model AuditLog {
   @@index([entity])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+model DataBarang {
+  id               String          @id @default(uuid()) @db.Char(36)
+  kodeBarang       String          @unique @map("kode_barang") @db.VarChar(80)
+  namaBarang       String          @map("nama_barang") @db.VarChar(180)
+  kategori         String          @db.VarChar(80)
+  spesifikasi      String          @db.Text
+  satuan           String          @db.VarChar(40)
+  jumlahKebutuhan  Int             @default(0) @map("jumlah_kebutuhan")
+  hargaSatuan      Decimal         @default(0) @map("harga_satuan") @db.Decimal(18, 2)
+  estimasiTotal    Decimal         @default(0) @map("estimasi_total") @db.Decimal(18, 2)
+  tkdnPersen       Decimal?        @map("tkdn_persen") @db.Decimal(5, 2)
+  isPdn            Boolean         @default(false) @map("is_pdn")
+  prioritas        BarangPrioritas @default(NORMAL)
+  lokasiPenerimaan String?         @map("lokasi_penerimaan") @db.VarChar(160)
+  catatan          String?         @db.Text
+  status           BarangStatus    @default(AKTIF)
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+
+  @@index([namaBarang])
+  @@index([kategori])
+  @@index([prioritas])
+  @@index([status])
+  @@map("data_barang")
+}
+
+model PaketPengadaan {
+  id                  String               @id @default(uuid()) @db.Char(36)
+  kodePaket           String               @unique @map("kode_paket") @db.VarChar(80)
+  namaPaket           String               @map("nama_paket") @db.VarChar(220)
+  unitPemohon         String               @map("unit_pemohon") @db.VarChar(160)
+  satuanKerja         String?              @map("satuan_kerja") @db.VarChar(160)
+  tahunAnggaran       Int                  @map("tahun_anggaran")
+  sumberDana          String               @map("sumber_dana") @db.VarChar(120)
+  jenisPengadaan      PaketJenisPengadaan  @default(BARANG) @map("jenis_pengadaan")
+  kategori            String               @db.VarChar(100)
+  metodePengadaan     PaketMetodePengadaan @map("metode_pengadaan")
+  pagu                Decimal              @default(0) @db.Decimal(18, 2)
+  hps                 Decimal              @default(0) @db.Decimal(18, 2)
+  statusPaket         PaketStatus          @default(PERENCANAAN) @map("status_paket")
+  prioritas           BarangPrioritas      @default(NORMAL)
+  ppkPenanggungJawab  String?              @map("ppk_penanggung_jawab") @db.VarChar(160)
+  rencanaMulai        DateTime?            @map("rencana_mulai") @db.Date
+  rencanaSelesai      DateTime?            @map("rencana_selesai") @db.Date
+  lokasiPelaksanaan   String?              @map("lokasi_pelaksanaan") @db.VarChar(180)
+  catatan             String?              @db.Text
+  createdAt           DateTime             @default(now()) @map("created_at")
+  updatedAt           DateTime             @updatedAt @map("updated_at")
+
+  @@index([namaPaket])
+  @@index([unitPemohon])
+  @@index([tahunAnggaran])
+  @@index([kategori])
+  @@index([metodePengadaan])
+  @@index([statusPaket])
+  @@map("paket_pengadaan")
+}
+
+model RencanaUmumPengadaan {
+  id                String               @id @default(uuid()) @db.Char(36)
+  kodeRup           String               @unique @map("kode_rup") @db.VarChar(80)
+  namaPaket         String               @map("nama_paket") @db.VarChar(220)
+  unitPengusul      String               @map("unit_pengusul") @db.VarChar(160)
+  sumberDana        String               @map("sumber_dana") @db.VarChar(120)
+  pagu              Decimal              @default(0) @db.Decimal(18, 2)
+  metodePengadaan   PaketMetodePengadaan @map("metode_pengadaan")
+  jadwalPemilihan   String?              @map("jadwal_pemilihan") @db.VarChar(120)
+  tahunAnggaran     Int                  @map("tahun_anggaran")
+  statusSirup       RupStatus            @default(BELUM_INPUT) @map("status_sirup")
+  catatan           String?              @db.Text
+  createdAt         DateTime             @default(now()) @map("created_at")
+  updatedAt         DateTime             @updatedAt @map("updated_at")
+
+  @@index([namaPaket])
+  @@index([unitPengusul])
+  @@index([sumberDana])
+  @@index([tahunAnggaran])
+  @@index([metodePengadaan])
+  @@index([statusSirup])
+  @@map("rencana_umum_pengadaan")
 }

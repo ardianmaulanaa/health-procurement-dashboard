@@ -1,0 +1,191 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Save } from "lucide-react";
+
+const inputClass =
+  "h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#08783f] focus:ring-2 focus:ring-emerald-100";
+const labelClass = "text-xs font-black uppercase tracking-wide text-slate-500";
+
+export default function RupForm() {
+  const router = useRouter();
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [pagu, setPagu] = useState("0");
+
+  const formattedPagu = useMemo(() => {
+    const value = Number(pagu);
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      maximumFractionDigits: 0,
+    }).format(Number.isFinite(value) ? value : 0);
+  }, [pagu]);
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaving(true);
+    setError("");
+
+    const formData = new FormData(event.currentTarget);
+    const payload = Object.fromEntries(formData.entries());
+
+    const response = await fetch("/api/rup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const result = await response.json().catch(() => null);
+    setSaving(false);
+
+    if (!response.ok) {
+      setError(result?.message ?? "Data RUP gagal disimpan.");
+      return;
+    }
+
+    router.push("/rup");
+    router.refresh();
+  }
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+    >
+      <div className="border-b border-slate-100 px-5 py-4">
+        <h1 className="text-lg font-black text-[#16227c]">
+          Form Rencana Umum Pengadaan
+        </h1>
+        <p className="mt-1 text-sm font-semibold text-slate-500">
+          Isi data RUP seperti kode RUP, unit pengusul, sumber dana, pagu,
+          metode, jadwal pemilihan, dan status tayang SIRUP.
+        </p>
+      </div>
+
+      <div className="grid gap-5 p-5 md:grid-cols-2">
+        <label className="grid gap-2">
+          <span className={labelClass}>Kode RUP</span>
+          <input name="kodeRup" required className={inputClass} />
+        </label>
+
+        <label className="grid gap-2">
+          <span className={labelClass}>Tahun Anggaran</span>
+          <input
+            name="tahunAnggaran"
+            type="number"
+            min="2000"
+            required
+            className={inputClass}
+            defaultValue={new Date().getFullYear()}
+          />
+        </label>
+
+        <label className="grid gap-2 md:col-span-2">
+          <span className={labelClass}>Nama Paket</span>
+          <input name="namaPaket" required className={inputClass} />
+        </label>
+
+        <label className="grid gap-2">
+          <span className={labelClass}>Unit Pengusul</span>
+          <input
+            name="unitPengusul"
+            required
+            className={inputClass}
+            placeholder="Contoh: Seksi Mikrobiologi"
+          />
+        </label>
+
+        <label className="grid gap-2">
+          <span className={labelClass}>Sumber Dana</span>
+          <input
+            name="sumberDana"
+            required
+            className={inputClass}
+            placeholder="Contoh: APBD / BLUD / DBHCHT"
+          />
+        </label>
+
+        <label className="grid gap-2">
+          <span className={labelClass}>Pagu</span>
+          <input
+            name="pagu"
+            type="number"
+            min="0"
+            required
+            className={inputClass}
+            value={pagu}
+            onChange={(event) => setPagu(event.target.value)}
+          />
+          <span className="text-xs font-bold text-slate-500">
+            {formattedPagu}
+          </span>
+        </label>
+
+        <label className="grid gap-2">
+          <span className={labelClass}>Metode</span>
+          <select name="metodePengadaan" required className={inputClass}>
+            <option value="E_PURCHASING">e-Katalog</option>
+            <option value="TENDER">Tender</option>
+            <option value="NON_TENDER">Non Tender</option>
+            <option value="PENGADAAN_LANGSUNG">Pengadaan Langsung</option>
+            <option value="SWAKELOLA">Swakelola</option>
+          </select>
+        </label>
+
+        <label className="grid gap-2">
+          <span className={labelClass}>Jadwal Pemilihan</span>
+          <input
+            name="jadwalPemilihan"
+            className={inputClass}
+            placeholder="Contoh: Mar - Apr 2026"
+          />
+        </label>
+
+        <label className="grid gap-2">
+          <span className={labelClass}>Status SIRUP</span>
+          <select name="statusSirup" required className={inputClass}>
+            <option value="BELUM_INPUT">Belum Input</option>
+            <option value="PROSES_VERIFIKASI">Proses Verifikasi</option>
+            <option value="SUDAH_TAYANG">Sudah Tayang</option>
+            <option value="REVISI_PAGU">Revisi Pagu</option>
+            <option value="DITARIK">Ditarik</option>
+          </select>
+        </label>
+
+        <label className="grid gap-2 md:col-span-2">
+          <span className={labelClass}>Catatan</span>
+          <textarea
+            name="catatan"
+            className="min-h-28 rounded-lg border border-slate-300 bg-white px-3 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#08783f] focus:ring-2 focus:ring-emerald-100"
+          />
+        </label>
+      </div>
+
+      {error ? (
+        <div className="mx-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700">
+          {error}
+        </div>
+      ) : null}
+
+      <div className="flex justify-end gap-3 border-t border-slate-100 px-5 py-4">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="h-11 rounded-lg border border-slate-300 bg-white px-4 text-sm font-black text-slate-600 transition hover:bg-slate-50"
+        >
+          Batal
+        </button>
+        <button
+          type="submit"
+          disabled={saving}
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-[#08783f] px-4 text-sm font-black text-white transition hover:bg-[#066532] disabled:opacity-60"
+        >
+          <Save className="h-4 w-4" />
+          {saving ? "Menyimpan..." : "Simpan RUP"}
+        </button>
+      </div>
+    </form>
+  );
+}

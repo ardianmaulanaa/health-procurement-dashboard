@@ -4,13 +4,17 @@ import {
   BarChart3,
   Boxes,
   Building2,
+  CalendarDays,
   ClipboardList,
   FileBarChart2,
   FileCheck2,
+  FolderOpen,
   Handshake,
+  MessageSquareText,
   PackageSearch,
   Plus,
   ShieldCheck,
+  ShoppingCart,
   Truck,
   UsersRound,
   type LucideIcon,
@@ -53,6 +57,20 @@ const pageConfigs = {
     rightLabel: "Paket",
     icon: ClipboardList,
     primaryAction: { label: "Tambah paket", href: "/paket/tambah" },
+  },
+  rup: {
+    title: "SIRUP / RUP",
+    subtitle:
+      "Pantau rencana umum pengadaan, status tayang SIRUP, sumber dana, pagu, dan jadwal pemilihan.",
+    rightLabel: "Perencanaan",
+    icon: ClipboardList,
+  },
+  katalog: {
+    title: "Katalog V6/V5",
+    subtitle:
+      "Kelola paket e-Katalog, produk, penyedia, harga tayang, harga nego, surat pesanan, BAST, dan pembayaran.",
+    rightLabel: "e-Katalog",
+    icon: ShoppingCart,
   },
   pengadaan: {
     title: "Tahapan Pengadaan",
@@ -101,6 +119,34 @@ const pageConfigs = {
     rightLabel: "Risiko",
     icon: AlertTriangle,
   },
+  audit: {
+    title: "Audit Readiness",
+    subtitle:
+      "Pantau kelengkapan dokumen pengadaan, kesiapan BAST, bukti pembayaran, dan catatan pemeriksaan.",
+    rightLabel: "Audit",
+    icon: ShieldCheck,
+  },
+  timeline: {
+    title: "Timeline",
+    subtitle:
+      "Lihat jadwal perencanaan, pemilihan penyedia, kontrak, pengiriman, serah terima, dan pembayaran.",
+    rightLabel: "Jadwal",
+    icon: CalendarDays,
+  },
+  klinik: {
+    title: "Klinik UKPBJ",
+    subtitle:
+      "Ruang konsultasi pengadaan untuk metode pemilihan, penyusunan HPS, KAK, kontrak, dan kelengkapan dokumen.",
+    rightLabel: "Konsultasi",
+    icon: MessageSquareText,
+  },
+  dokumen: {
+    title: "Dokumen & Template",
+    subtitle:
+      "Kelola template KAK, HPS, rancangan kontrak, SPPBJ, BAST, BAPB, dan dokumen pendukung pengadaan.",
+    rightLabel: "Dokumen",
+    icon: FolderOpen,
+  },
   laporan: {
     title: "Laporan",
     subtitle: "Rekap paket, kontrak, progres, dan realisasi keuangan.",
@@ -117,6 +163,13 @@ const pageConfigs = {
     title: "Administrasi",
     subtitle: "Kelola pengguna, role, sinkronisasi, dan audit log.",
     rightLabel: "Admin",
+    icon: UsersRound,
+  },
+  pengaturan: {
+    title: "Pengaturan",
+    subtitle:
+      "Atur preferensi sistem, akses modul, pengguna, role, master data, dan sinkronisasi pendukung.",
+    rightLabel: "Sistem",
     icon: UsersRound,
   },
   profile: {
@@ -136,6 +189,8 @@ const aliases: Record<string, keyof typeof pageConfigs> = {
   "paket-edit": "paket",
   "paket-riwayat": "paket",
   "pengadaan-tahap": "pengadaan",
+  perencanaan: "pengadaan",
+  pemilihan: "pengadaan",
   "kontrak-tambah": "kontrak",
   "kontrak-detail": "kontrak",
   "kontrak-edit": "kontrak",
